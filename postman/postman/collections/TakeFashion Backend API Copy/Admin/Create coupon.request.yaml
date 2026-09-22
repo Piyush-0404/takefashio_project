@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/coupons"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "code": "WELCOME10",
+      "type": "PERCENTAGE",
+      "value": 10,
+      "minimumAmount": 500,
+      "maximumDiscount": 500,
+      "usageLimit": 100,
+      "startsAt": "2026-01-01T00:00:00.000Z",
+      "endsAt": "2027-12-31T23:59:59.000Z"
+    }
+order: 9000

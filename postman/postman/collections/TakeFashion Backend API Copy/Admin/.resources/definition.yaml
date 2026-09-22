@@ -1,0 +1,3 @@
+$kind: collection
+description: Run Admin login first. The login response stores an HTTP-only cookie used by admin routes.
+order: 6000

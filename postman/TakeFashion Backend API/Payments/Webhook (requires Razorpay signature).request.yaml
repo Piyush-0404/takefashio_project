@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/payments/webhook"
+method: POST
+headers:
+  Content-Type: application/json
+  x-razorpay-signature: replace-me
+body:
+  type: text
+  content: |-
+    {
+      "event": "payment.captured",
+      "payload": {
+        "payment": {
+          "entity": {
+            "id": "replace-me",
+            "order_id": "replace-me"
+          }
+        }
+      }
+    }
+order: 4000

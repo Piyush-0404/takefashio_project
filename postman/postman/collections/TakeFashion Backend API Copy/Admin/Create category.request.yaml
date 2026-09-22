@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/categories"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Summer Collection",
+      "slug": "summer-collection",
+      "description": "Seasonal category",
+      "sortOrder": 10
+    }
+order: 7000

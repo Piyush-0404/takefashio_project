@@ -1,0 +1,19 @@
+$kind: collection
+description: "Postman requests for the TakeFashion Next.js backend. Run requests in order: register, login, products, cart/wishlist, checkout, then payments."
+variables:
+  baseUrl: http://localhost:3000
+  testEmail: customer@example.com
+  testPassword: Password123!
+  productId: ""
+  cartItemId: ""
+  wishlistItemId: ""
+  orderId: ""
+  adminEmail: admin@example.com
+  adminPassword: replace-with-admin-password
+  adminProductId: ""
+  adminCategoryId: ""
+  adminVariantId: ""
+  adminCouponId: ""
+  adminOfferId: ""
+  adminOrderId: ""
+  adminUserId: ""

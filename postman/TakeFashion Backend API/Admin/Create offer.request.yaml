@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/offers"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Summer Sale",
+      "slug": "summer-sale",
+      "description": "Seasonal sale",
+      "offerType": "PERCENTAGE",
+      "percentage": 20,
+      "startsAt": "2026-01-01T00:00:00.000Z",
+      "endsAt": "2027-12-31T23:59:59.000Z",
+      "productIds": ["{{adminProductId}}"],
+      "categoryIds": ["{{adminCategoryId}}"]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      if (body.offer?.id) pm.collectionVariables.set('adminOfferId', body.offer.id);
+order: 15000

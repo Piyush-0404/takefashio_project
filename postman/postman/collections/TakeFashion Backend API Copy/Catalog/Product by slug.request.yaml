@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/products/slug/linen-relaxed-shirt"
+method: GET
+order: 4000

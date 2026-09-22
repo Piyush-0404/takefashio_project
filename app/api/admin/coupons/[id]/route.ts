@@ -1,0 +1,7 @@
+import { db } from "@/lib/db";
+import { getAdminOrResponse } from "@/lib/admin";
+import { errorResponse, ok } from "@/lib/http";
+import { z } from "zod";
+const updateSchema = z.object({ code: z.string().trim().min(3).transform((value) => value.toUpperCase()).optional(), description: z.string().nullable().optional(), type: z.enum(["PERCENTAGE", "FIXED"]).optional(), value: z.number().positive().optional(), minimumAmount: z.number().nonnegative().nullable().optional(), maximumDiscount: z.number().positive().nullable().optional(), usageLimit: z.number().int().positive().nullable().optional(), startsAt: z.coerce.date().optional(), endsAt: z.coerce.date().optional(), isActive: z.boolean().optional() });
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; return ok({ coupon: await db.coupon.update({ where: { id }, data: updateSchema.parse(await request.json()) }) }); } catch (error) { return errorResponse(error); } }
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; return ok({ coupon: await db.coupon.update({ where: { id }, data: { isActive: false } }), message: "Coupon deactivated" }); } catch (error) { return errorResponse(error); } }

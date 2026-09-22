@@ -1,0 +1,3 @@
+import { db } from "@/lib/db";
+import { errorResponse, ok } from "@/lib/http";
+export async function GET() { try { const now = new Date(); return ok({ offers: await db.offer.findMany({ where: { isActive: true, startsAt: { lte: now }, endsAt: { gte: now } }, include: { products: { include: { product: true } }, categories: { include: { category: true } } }, orderBy: { endsAt: "asc" } }) }); } catch (error) { return errorResponse(error); } }

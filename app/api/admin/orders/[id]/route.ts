@@ -1,0 +1,7 @@
+import { db } from "@/lib/db";
+import { getAdminOrResponse } from "@/lib/admin";
+import { badRequest, errorResponse, ok } from "@/lib/http";
+import { z } from "zod";
+const statusSchema = z.object({ status: z.enum(["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "RETURN_REQUESTED", "RETURNED"]).optional(), paymentStatus: z.enum(["PENDING", "CREATED", "AUTHORIZED", "CAPTURED", "SUCCESS", "FAILED", "REFUNDED"]).optional() }).refine((value) => value.status || value.paymentStatus, { message: "status or paymentStatus is required" });
+export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; const order = await db.order.findUnique({ where: { id }, include: { user: { select: { id: true, name: true, email: true } }, items: true, payments: true, address: true } }); return order ? ok({ order }) : badRequest("Order not found", 404); } catch (error) { return errorResponse(error); } }
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; return ok({ order: await db.order.update({ where: { id }, data: statusSchema.parse(await request.json()) }) }); } catch (error) { return errorResponse(error); } }

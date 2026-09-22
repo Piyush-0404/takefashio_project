@@ -1,0 +1,4 @@
+import { db } from "@/lib/db";
+import { verifyWebhookSignature } from "@/lib/payments";
+import { badRequest, ok } from "@/lib/http";
+export async function POST(request: Request) { const body = await request.text(); const signature = request.headers.get("x-razorpay-signature"); if (!signature || !process.env.RAZORPAY_WEBHOOK_SECRET || !verifyWebhookSignature(body, signature)) return badRequest("Invalid webhook signature", 400); const event = JSON.parse(body) as { event?: string; payload?: { payment?: { entity?: { id?: string; order_id?: string } } } }; if (event.event === "payment.captured" && event.payload?.payment?.entity?.order_id) await db.payment.updateMany({ where: { providerOrderId: event.payload.payment.entity.order_id }, data: { providerPaymentId: event.payload.payment.entity.id, status: "CAPTURED" } }); return ok({ received: true }); }

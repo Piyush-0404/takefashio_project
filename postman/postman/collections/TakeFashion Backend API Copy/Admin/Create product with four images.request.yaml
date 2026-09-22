@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/products"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Admin Test Product",
+      "slug": "admin-test-product",
+      "description": "Product description and features.",
+      "categoryId": "{{categoryId}}",
+      "price": 2499,
+      "basePrice": 2999,
+      "gender": "UNISEX",
+      "images": [
+        { "imageUrl": "https://example.com/front.jpg", "altText": "Front", "isPrimary": true, "sortOrder": 0 },
+        { "imageUrl": "https://example.com/back.jpg", "altText": "Back", "sortOrder": 1 },
+        { "imageUrl": "https://example.com/side.jpg", "altText": "Side", "sortOrder": 2 },
+        { "imageUrl": "https://example.com/detail.jpg", "altText": "Detail", "sortOrder": 3 }
+      ],
+      "variants": [
+        { "sku": "TEST-M-BLACK", "size": "M", "color": "Black", "price": 2499, "stockQuantity": 20 }
+      ]
+    }
+order: 4000

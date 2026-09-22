@@ -1,0 +1,9 @@
+import { db } from "@/lib/db";
+import { getAdminOrResponse } from "@/lib/admin";
+import { badRequest, errorResponse, ok } from "@/lib/http";
+import { z } from "zod";
+
+const updateSchema = z.object({ name: z.string().min(2).optional(), slug: z.string().regex(/^[a-z0-9-]+$/).optional(), description: z.string().min(1).optional(), categoryId: z.string().optional(), price: z.number().nonnegative().optional(), basePrice: z.number().nonnegative().optional(), salePrice: z.number().nonnegative().nullable().optional(), compareAt: z.number().nonnegative().nullable().optional(), brand: z.string().nullable().optional(), sku: z.string().nullable().optional(), gender: z.enum(["MEN", "WOMEN", "KIDS", "UNISEX"]).optional(), imageUrl: z.string().url().nullable().optional(), stock: z.number().int().nonnegative().optional(), isFeatured: z.boolean().optional(), isNewArrival: z.boolean().optional(), isTrending: z.boolean().optional(), isActive: z.boolean().optional() });
+
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; const input = updateSchema.parse(await request.json()); const product = await db.product.update({ where: { id }, data: input, include: { category: true, productImages: true, variants: { include: { inventory: true } } } }); return ok({ product }); } catch (error) { return errorResponse(error); } }
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; const product = await db.product.update({ where: { id }, data: { isActive: false } }); return ok({ product, message: "Product deactivated" }); } catch (error) { return errorResponse(error); } }

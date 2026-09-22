@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/products?page=1&limit=20&sort=newest"
+method: GET
+queryParams:
+  page: "1"
+  limit: "20"
+  sort: newest
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      if (body.products?.[0]) pm.collectionVariables.set('productId', body.products[0].id);
+    language: text/javascript
+order: 1000

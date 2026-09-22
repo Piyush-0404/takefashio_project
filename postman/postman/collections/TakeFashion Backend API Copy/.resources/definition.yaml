@@ -1,0 +1,17 @@
+$kind: collection
+description: Complete TakeFashion customer and admin API collection. Set baseUrl, then run login before protected requests.
+variables:
+  baseUrl: http://localhost:3000
+  testEmail: customer@example.com
+  testPassword: Password123!
+  adminEmail: admin@example.com
+  adminPassword: replace-with-admin-password
+  productId: ""
+  cartItemId: ""
+  wishlistItemId: ""
+  orderId: ""
+  categoryId: ""
+  variantId: ""
+  couponId: ""
+  offerId: ""
+  userId: ""

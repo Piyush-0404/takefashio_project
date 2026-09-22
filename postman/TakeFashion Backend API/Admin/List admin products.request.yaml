@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/products"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      if (body.products?.length) pm.collectionVariables.set('adminProductId', body.products[0].id);
+order: 3000

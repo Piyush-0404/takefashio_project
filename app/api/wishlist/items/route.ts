@@ -1,0 +1,5 @@
+import { db } from "@/lib/db";
+import { getUserOrResponse } from "@/lib/guard";
+import { badRequest, errorResponse, ok } from "@/lib/http";
+import { z } from "zod";
+export async function POST(request: Request) { const user = await getUserOrResponse(); if (user instanceof Response) return user; try { const { productId } = z.object({ productId: z.string().min(1) }).parse(await request.json()); const product = await db.product.findFirst({ where: { id: productId, isActive: true } }); if (!product) return badRequest("Product not found", 404); const item = await db.wishlistItem.upsert({ where: { userId_productId: { userId: user.id, productId } }, create: { userId: user.id, productId }, update: {}, include: { product: true } }); return ok({ item }, 201); } catch (error) { return errorResponse(error); } }
