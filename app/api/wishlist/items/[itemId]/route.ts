@@ -1,0 +1,4 @@
+import { db } from "@/lib/db";
+import { getUserOrResponse } from "@/lib/guard";
+import { badRequest, errorResponse, ok } from "@/lib/http";
+export async function DELETE(_request: Request, context: { params: Promise<{ itemId: string }> }) { const user = await getUserOrResponse(); if (user instanceof Response) return user; try { const { itemId } = await context.params; const item = await db.wishlistItem.findFirst({ where: { id: itemId, userId: user.id } }); if (!item) return badRequest("Wishlist item not found", 404); await db.wishlistItem.delete({ where: { id: item.id } }); return ok({ message: "Item removed" }); } catch (error) { return errorResponse(error); } }

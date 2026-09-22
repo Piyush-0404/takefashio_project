@@ -1,0 +1,26 @@
+$kind: http-request
+name: Create order / checkout
+url: "{{baseUrl}}/api/orders"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "shippingAddress": {
+        "name": "Test Customer",
+        "phone": "9876543210",
+        "line1": "10 Fashion Street",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "postalCode": "400001",
+        "country": "India"
+      }
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      if (body.order?.id) pm.collectionVariables.set('orderId', body.order.id);
+order: 1000

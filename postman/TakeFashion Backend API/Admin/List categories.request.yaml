@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/categories"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      const root = body.categories?.find(category => !category.parentId);
+      if (root) pm.collectionVariables.set('adminCategoryId', root.id);
+order: 9000

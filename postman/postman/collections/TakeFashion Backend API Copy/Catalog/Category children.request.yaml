@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/categories/women/children"
+method: GET
+order: 7000

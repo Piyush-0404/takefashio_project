@@ -1,0 +1,4 @@
+import { db } from "@/lib/db";
+import { getAdminOrResponse } from "@/lib/admin";
+import { errorResponse, ok } from "@/lib/http";
+export async function GET() { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const [products, categories, customers, orders, revenue] = await Promise.all([db.product.count({ where: { isActive: true } }), db.category.count({ where: { isActive: true } }), db.user.count({ where: { role: "CUSTOMER" } }), db.order.count(), db.order.aggregate({ where: { paymentStatus: { in: ["CAPTURED", "SUCCESS"] } }, _sum: { total: true } })]); return ok({ metrics: { products, categories, customers, orders, revenue: revenue._sum.total ?? 0 } }); } catch (error) { return errorResponse(error); } }

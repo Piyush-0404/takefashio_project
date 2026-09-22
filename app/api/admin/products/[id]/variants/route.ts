@@ -1,0 +1,6 @@
+import { db } from "@/lib/db";
+import { getAdminOrResponse } from "@/lib/admin";
+import { badRequest, errorResponse, ok } from "@/lib/http";
+import { z } from "zod";
+const variantSchema = z.object({ sku: z.string().optional(), size: z.string().optional(), color: z.string().optional(), price: z.number().nonnegative().optional(), stockQuantity: z.number().int().nonnegative().default(0), isActive: z.boolean().optional() });
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; if (!await db.product.findUnique({ where: { id } })) return badRequest("Product not found", 404); const input = variantSchema.parse(await request.json()); const variant = await db.productVariant.create({ data: { productId: id, ...input, inventory: { create: { quantity: input.stockQuantity, availableQuantity: input.stockQuantity } } }, include: { inventory: true } }); return ok({ variant }, 201); } catch (error) { return errorResponse(error); } }

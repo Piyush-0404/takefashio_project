@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/products?category=women&min_price=300&max_price=3000&size=M&color=Black&sort=price_asc&page=1&limit=20"
+method: GET
+queryParams:
+  category: women
+  min_price: "300"
+  max_price: "3000"
+  size: M
+  color: Black
+  sort: price_asc
+  page: "1"
+  limit: "20"
+order: 2000

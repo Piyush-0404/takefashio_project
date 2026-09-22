@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/categories"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Summer Collection",
+      "slug": "summer-collection",
+      "description": "Seasonal products",
+      "sortOrder": 10
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      if (body.category?.id) pm.collectionVariables.set('adminCategoryId', body.category.id);
+order: 10000

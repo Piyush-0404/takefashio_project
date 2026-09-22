@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/users/{{adminUserId}}"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "isActive": true
+    }
+order: 22000

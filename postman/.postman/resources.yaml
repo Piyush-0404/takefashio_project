@@ -1,0 +1,11 @@
+# Use this workspace to collaborate
+workspace:
+  id: f6449a13-65cb-4257-8de4-a4539939bc82
+
+localResources:
+  collections:
+    - ../TakeFashion Backend API
+
+cloudResources:
+  collections:
+    ../postman/collections/TakeFashion Backend API Copy: 9aee4f3e-0216-44ff-81f1-4e2c31e97af2

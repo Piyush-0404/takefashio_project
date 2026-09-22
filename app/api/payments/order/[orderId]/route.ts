@@ -1,0 +1,4 @@
+import { db } from "@/lib/db";
+import { getUserOrResponse } from "@/lib/guard";
+import { badRequest, errorResponse, ok } from "@/lib/http";
+export async function GET(_request: Request, context: { params: Promise<{ orderId: string }> }) { const user = await getUserOrResponse(); if (user instanceof Response) return user; try { const { orderId } = await context.params; const payment = await db.payment.findFirst({ where: { orderId, userId: user.id }, select: { id: true, provider: true, providerOrderId: true, providerPaymentId: true, status: true, amount: true, currency: true, createdAt: true, updatedAt: true } }); return payment ? ok({ payment }) : badRequest("Payment not found", 404); } catch (error) { return errorResponse(error); } }

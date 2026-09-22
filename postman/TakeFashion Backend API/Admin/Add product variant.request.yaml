@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/products/{{adminProductId}}/variants"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "sku": "JACKET-XL-BLACK",
+      "size": "XL",
+      "color": "Black",
+      "price": 2499,
+      "stockQuantity": 10
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      if (body.variant?.id) pm.collectionVariables.set('adminVariantId', body.variant.id);
+order: 7000

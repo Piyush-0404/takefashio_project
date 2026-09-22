@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/addresses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "fullName": "Test Customer",
+      "phone": "9876543210",
+      "addressLine1": "10 Fashion Street",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "postalCode": "400001",
+      "country": "India",
+      "isDefault": true
+    }
+order: 2000

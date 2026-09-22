@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/products/{{adminProductId}}"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "description": "Updated description and product features.",
+      "price": 2299,
+      "isFeatured": true
+    }
+order: 5000

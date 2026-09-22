@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/payments/verify"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "razorpay_order_id": "replace-me",
+      "razorpay_payment_id": "replace-me",
+      "razorpay_signature": "replace-me"
+    }
+order: 3000

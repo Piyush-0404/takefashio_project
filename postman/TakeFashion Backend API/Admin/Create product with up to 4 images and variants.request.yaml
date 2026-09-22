@@ -1,0 +1,38 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/products"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Admin Test Jacket",
+      "slug": "admin-test-jacket",
+      "description": "A detailed product description.",
+      "categoryId": "{{adminCategoryId}}",
+      "brand": "TakeFashion",
+      "price": 2499,
+      "basePrice": 2999,
+      "salePrice": 2499,
+      "gender": "UNISEX",
+      "isNewArrival": true,
+      "isTrending": true,
+      "images": [
+        { "imageUrl": "https://example.com/jacket-front.jpg", "altText": "Jacket front", "isPrimary": true, "sortOrder": 0 },
+        { "imageUrl": "https://example.com/jacket-back.jpg", "altText": "Jacket back", "sortOrder": 1 },
+        { "imageUrl": "https://example.com/jacket-side.jpg", "altText": "Jacket side", "sortOrder": 2 },
+        { "imageUrl": "https://example.com/jacket-detail.jpg", "altText": "Jacket detail", "sortOrder": 3 }
+      ],
+      "variants": [
+        { "sku": "JACKET-M-BLACK", "size": "M", "color": "Black", "price": 2499, "stockQuantity": 20 },
+        { "sku": "JACKET-L-BLACK", "size": "L", "color": "Black", "price": 2499, "stockQuantity": 15 }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const body = pm.response.json();
+      if (body.product?.id) pm.collectionVariables.set('adminProductId', body.product.id);
+      if (body.product?.variants?.[0]?.id) pm.collectionVariables.set('adminVariantId', body.product.variants[0].id);
+order: 4000

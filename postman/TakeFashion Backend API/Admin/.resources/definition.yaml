@@ -1,0 +1,3 @@
+$kind: collection
+description: Run Admin login first. The login response sets the HTTP-only admin cookie used by all following requests.
+order: 8000

@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/products/{{adminProductId}}/images"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    [
+      { "imageUrl": "https://example.com/front.jpg", "altText": "Front view", "isPrimary": true, "sortOrder": 0 },
+      { "imageUrl": "https://example.com/back.jpg", "altText": "Back view", "sortOrder": 1 }
+    ]
+order: 6000

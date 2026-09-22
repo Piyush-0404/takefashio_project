@@ -1,0 +1,7 @@
+import { db } from "@/lib/db";
+import { getAdminOrResponse } from "@/lib/admin";
+import { errorResponse, ok } from "@/lib/http";
+import { z } from "zod";
+const updateSchema = z.object({ name: z.string().min(2).optional(), slug: z.string().regex(/^[a-z0-9-]+$/).optional(), parentId: z.string().nullable().optional(), description: z.string().nullable().optional(), imageUrl: z.string().url().nullable().optional(), sortOrder: z.number().int().optional(), isActive: z.boolean().optional() });
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; return ok({ category: await db.category.update({ where: { id }, data: updateSchema.parse(await request.json()) }) }); } catch (error) { return errorResponse(error); } }
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; return ok({ category: await db.category.update({ where: { id }, data: { isActive: false } }), message: "Category deactivated" }); } catch (error) { return errorResponse(error); } }

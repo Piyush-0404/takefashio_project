@@ -1,0 +1,7 @@
+import { db } from "@/lib/db";
+import { getAdminOrResponse } from "@/lib/admin";
+import { errorResponse, ok } from "@/lib/http";
+import { z } from "zod";
+const couponSchema = z.object({ code: z.string().trim().min(3).transform((value) => value.toUpperCase()), description: z.string().optional(), type: z.enum(["PERCENTAGE", "FIXED"]), value: z.number().positive(), minimumAmount: z.number().nonnegative().nullable().optional(), maximumDiscount: z.number().positive().nullable().optional(), usageLimit: z.number().int().positive().nullable().optional(), startsAt: z.coerce.date(), endsAt: z.coerce.date(), isActive: z.boolean().optional() }).refine((value) => value.endsAt > value.startsAt, { message: "endsAt must be after startsAt" });
+export async function GET() { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { return ok({ coupons: await db.coupon.findMany({ orderBy: { updatedAt: "desc" } }) }); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { return ok({ coupon: await db.coupon.create({ data: couponSchema.parse(await request.json()) }) }, 201); } catch (error) { return errorResponse(error); } }

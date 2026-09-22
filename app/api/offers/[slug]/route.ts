@@ -1,0 +1,3 @@
+import { db } from "@/lib/db";
+import { badRequest, errorResponse, ok } from "@/lib/http";
+export async function GET(_request: Request, context: { params: Promise<{ slug: string }> }) { try { const { slug } = await context.params; const now = new Date(); const offer = await db.offer.findFirst({ where: { slug, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } }, include: { products: { include: { product: true } }, categories: { include: { category: true } } } }); return offer ? ok({ offer }) : badRequest("Offer not found", 404); } catch (error) { return errorResponse(error); } }

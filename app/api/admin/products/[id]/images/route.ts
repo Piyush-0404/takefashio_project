@@ -1,0 +1,6 @@
+import { db } from "@/lib/db";
+import { getAdminOrResponse } from "@/lib/admin";
+import { badRequest, errorResponse, ok } from "@/lib/http";
+import { z } from "zod";
+const imageSchema = z.object({ imageUrl: z.string().url(), altText: z.string().optional(), isPrimary: z.boolean().optional(), sortOrder: z.number().int().nonnegative().optional() });
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const { id } = await context.params; const images = z.array(imageSchema).min(1).max(4).parse(await request.json()); const product = await db.product.findUnique({ where: { id } }); if (!product) return badRequest("Product not found", 404); await db.productImage.deleteMany({ where: { productId: id } }); return ok({ images: await db.productImage.createManyAndReturn({ data: images.map((image) => ({ ...image, productId: id })) }) }); } catch (error) { return errorResponse(error); } }
