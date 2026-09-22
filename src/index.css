@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* TakeFashion Brand Tokens */
+    --tf-magenta: #d41472;
+    --tf-magenta-hover: #b80f62;
+    --tf-purple: #6d28d9;
+    --tf-purple-deep: #201326;
+    --tf-orange: #f97316;
+    --tf-orange-hover: #ea580c;
+    --tf-coral: #fb7185;
+    
+    /* Neutrals & Surfaces */
+    --tf-ink: #0f172a;
+    --tf-charcoal: #1e293b;
+    --tf-muted: #64748b;
+    --tf-border: #e2e8f0;
+    --tf-paper: #fffafc;
+    --tf-ivory: #faf7f5;
+    --tf-card: #ffffff;
+
+    /* Category Atmosphere Tones */
+    --bg-men-hero: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #312e81 100%);
+    --bg-women-hero: linear-gradient(135deg, #4a044e 0%, #2e1065 50%, #831843 100%);
+    --bg-kids-hero: linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #ea580c 100%);
+    --bg-jewellery-hero: linear-gradient(135deg, #2e1065 0%, #4c0519 50%, #1e1b4b 100%);
+    --bg-accessories-hero: linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%);
+    --bg-offers-hero: linear-gradient(135deg, #9d174d 0%, #701a75 50%, #ea580c 100%);
+  }
+
+  * { 
+    box-sizing: border-box; 
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--tf-paper);
+    color: var(--tf-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: #fbcfe8;
+    color: #831843;
+  }
+}
+
+/* Custom marquee animation for Announcement Ticker */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Micro-interaction & Design System Utilities */
+.tf-shadow-card {
+  box-shadow: 0 2px 12px -2px rgba(15, 23, 42, 0.06), 0 1px 4px -1px rgba(15, 23, 42, 0.04);
+}
+
+.tf-shadow-card-hover {
+  box-shadow: 0 16px 32px -8px rgba(109, 40, 217, 0.12), 0 4px 12px -2px rgba(212, 20, 114, 0.08);
+}
+
+.tf-badge-primary {
+  background: linear-gradient(135deg, #d41472, #f97316);
+  color: #ffffff;
+}
+
+.tf-btn-primary {
+  background: linear-gradient(135deg, #d41472, #f97316);
+  color: #ffffff;
+  transition: all 0.25s ease;
+}
+
+.tf-btn-primary:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -4px rgba(212, 20, 114, 0.35);
+}
+
+.tf-btn-secondary {
+  background-color: #0f172a;
+  color: #ffffff;
+  transition: all 0.25s ease;
+}
+
+.tf-btn-secondary:hover {
+  background-color: #d41472;
+  transform: translateY(-1px);
+}
+
+/* Smooth custom scrollbars for drawers and menus */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
