@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "https://takefashion-frontend.vercel.app",
 ]);
 
 export function middleware(request: NextRequest) {
