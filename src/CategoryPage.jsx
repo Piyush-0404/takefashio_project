@@ -36,12 +36,13 @@ function getCategoryPills(root) {
   return pills;
 }
 
-export default function CategoryPage({ onProductClick, onAddToCart, onToggleWishlist, wishlistIds = [] }) {
+export default function CategoryPage({ onProductClick, onAddToCart, onBuyNow, onToggleWishlist, wishlistIds = [], products: catalogProducts = ALL_PRODUCTS, categories = [] }) {
   const { pathname } = useLocation();
   const root = pathname.split('/')[1] || 'men';
   const parts = CATEGORY_PATHS[pathname] || [titleCase(root)];
   const currentSubcategory = parts.length > 1 ? parts[parts.length - 1] : null;
-  const config = CATEGORY_CONFIG[root] || CATEGORY_CONFIG.men;
+  const dynamicCategory = categories.find((category) => category.slug === root || category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === root);
+  const config = CATEGORY_CONFIG[root] || { label: dynamicCategory?.name || titleCase(root), title: dynamicCategory?.name || titleCase(root), themeBg: 'bg-white' };
 
   const [maxPrice, setMaxPrice] = useState(6500);
   const [minRating, setMinRating] = useState(0);
@@ -51,9 +52,12 @@ export default function CategoryPage({ onProductClick, onAddToCart, onToggleWish
   const categoryPills = getCategoryPills(root);
   const availableSubcategories = config?.children ? Object.values(config.children).flat() : [];
 
-  // Filter products matching category and active subcategory
-  const products = ALL_PRODUCTS.filter((product) => {
-    // 1. Root match
+  const products = catalogProducts.filter((product) => {
+    const productCategoryName = String(product.category || product.audience || product.department || '').toLowerCase();
+    const normalizedRoot = root.toLowerCase();
+    const normalizedProductCategory = productCategoryName.replace(/[^a-z0-9]+/g, '-');
+    const normalizedDisplayCategory = String(config.label || '').toLowerCase();
+
     let matchesRoot = false;
     if (root === 'offers') {
       matchesRoot = product.originalPrice > product.price;
@@ -62,12 +66,11 @@ export default function CategoryPage({ onProductClick, onAddToCart, onToggleWish
     } else if (root === 'wishlist') {
       matchesRoot = wishlistIds.includes(product.id);
     } else {
-      matchesRoot = product.audience === config.label || product.department === config.label;
+      matchesRoot = normalizedProductCategory === normalizedRoot || productCategoryName === normalizedDisplayCategory || product.department === config.label || product.audience === config.label;
     }
 
     if (!matchesRoot) return false;
 
-    // 2. Subcategory / deep path match
     if (currentSubcategory) {
       const target = currentSubcategory.toLowerCase();
       const matchesSub =
@@ -77,7 +80,6 @@ export default function CategoryPage({ onProductClick, onAddToCart, onToggleWish
       if (!matchesSub) return false;
     }
 
-    // 3. Local filter sidebar subcategory match
     if (selectedPill !== 'all') {
       const matchesLocal =
         (product.subcategory && product.subcategory.toLowerCase() === selectedPill.toLowerCase()) ||
@@ -85,7 +87,6 @@ export default function CategoryPage({ onProductClick, onAddToCart, onToggleWish
       if (!matchesLocal) return false;
     }
 
-    // 4. Price & rating
     if (product.price > maxPrice) return false;
     if (minRating > 0 && product.rating < minRating) return false;
 
@@ -191,6 +192,7 @@ export default function CategoryPage({ onProductClick, onAddToCart, onToggleWish
               products={products}
               onProductClick={onProductClick}
               onAddToCart={onAddToCart}
+              onBuyNow={onBuyNow}
               onToggleWishlist={onToggleWishlist}
               wishlistIds={wishlistIds}
             />

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Heart, Menu, Search, ShoppingBag, X, User, LogOut } from 'lucide-react';
+import { Bell, ChevronDown, Heart, Menu, Search, ShoppingBag, X, User, LogOut } from 'lucide-react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import AnnouncementBar from './AnnouncementBar';
 import { authService } from './services/authService';
+import { categoryService } from './services/categoryService';
+import { subscribeCatalogUpdates } from './services/catalogSync';
 
 const NAV_MENUS = {
   Men: {
@@ -136,7 +138,7 @@ const NAV_MENUS = {
   }
 };
 
-export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSearch }) {
+export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSearch, notifications = [], unreadNotifications = 0, onMarkNotificationRead, onMarkAllNotificationsRead }) {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
@@ -144,6 +146,23 @@ export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSea
   const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await categoryService.listCategories();
+        setCategories(response || []);
+      } catch (error) {
+        setCategories([]);
+      }
+    };
+
+    loadCategories();
+    const unsubscribe = subscribeCatalogUpdates(() => loadCategories());
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
@@ -163,6 +182,23 @@ export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSea
     setExpandedMobileCategory(null);
     setAccountDropdownOpen(false);
   };
+
+  const categoryMenus = categories.length
+    ? categories.map((category) => [category.name, {
+        href: `/${category.slug}`,
+        accentColor: 'border-slate-800',
+        highlight: {
+          title: category.name,
+          desc: category.description || 'Fresh arrivals from our latest collection.',
+          link: `/${category.slug}`,
+        },
+        columns: [{
+          title: category.name,
+          href: `/${category.slug}`,
+          items: (category.children || []).map((child) => ({ label: child.name, href: `/${category.slug}/${child.slug}` })),
+        }],
+      }])
+    : Object.entries(NAV_MENUS);
 
   const handleAccountClick = (e) => {
     e.preventDefault();
@@ -219,7 +255,9 @@ export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSea
             Home
           </NavLink>
 
-          {Object.entries(NAV_MENUS).map(([label, menu]) => (
+          {currentUser && <div className="relative"><button onClick={() => setNotificationsOpen((open) => !open)} className="p-2 text-slate-700 hover:text-fuchsia-600 transition relative rounded-full hover:bg-slate-100/60" title="Notifications" aria-label="Notifications"><Bell className="w-5 h-5" />{unreadNotifications > 0 && <span className="absolute top-1 right-1 bg-fuchsia-600 text-white font-black text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center">{unreadNotifications}</span>}</button>{notificationsOpen && <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 shadow-xl p-3 z-50"><div className="flex items-center justify-between border-b pb-2"><strong className="text-xs uppercase">Notifications</strong><button onClick={onMarkAllNotificationsRead} className="text-[10px] font-bold text-fuchsia-600">Mark all read</button></div><div className="max-h-80 overflow-y-auto">{notifications.length ? notifications.map((notification) => <button key={notification.id} onClick={() => { onMarkNotificationRead?.(notification.id); if (notification.link) navigate(notification.link); }} className={`block w-full text-left py-3 border-b border-slate-100 ${notification.readAt ? 'opacity-60' : ''}`}><p className="text-xs font-black">{notification.title}</p><p className="text-[11px] text-slate-600 mt-1">{notification.message}</p><p className="text-[10px] text-slate-400 mt-1">{new Date(notification.createdAt).toLocaleString('en-IN')}</p></button>) : <p className="py-6 text-xs text-slate-500 text-center">No notifications.</p>}</div></div>}</div>}
+
+          {categoryMenus.map(([label, menu]) => (
             <div
               key={label}
               className="relative"
@@ -422,7 +460,7 @@ export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSea
             Home
           </NavLink>
 
-          {Object.entries(NAV_MENUS).map(([label, menu]) => (
+          {categoryMenus.map(([label, menu]) => (
             <div key={label} className="border-t border-slate-100 pt-2">
               <div className="flex items-center justify-between">
                 <Link to={menu.href} onClick={closeAll} className="py-2 font-black text-sm text-slate-800">

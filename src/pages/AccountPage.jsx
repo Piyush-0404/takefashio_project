@@ -2,20 +2,69 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Package, Heart, MapPin, Settings, LogOut, Sparkles, CheckCircle2 } from 'lucide-react';
 import { authService } from '../services/authService';
+import { addressService } from '../services/addressService';
+import { orderService } from '../services/orderService';
 import { ALL_PRODUCTS } from '../catalog';
 import ProductCard from '../components/product/ProductCard';
 
-export default function AccountPage({ onShowToast, onAddToCart, onToggleWishlist, wishlistIds = [], onProductClick }) {
+export default function AccountPage({ onShowToast, onAddToCart, onBuyNow, onToggleWishlist, wishlistIds = [], onProductClick, products = ALL_PRODUCTS }) {
   const navigate = useNavigate();
   const [currentUser] = useState(() => authService.getCurrentUser());
   const [activeTab, setActiveTab] = useState('orders'); // 'overview', 'orders', 'wishlist', 'addresses', 'settings'
-  const [orders] = useState(() => authService.getMockOrders());
-  const [addresses] = useState(() => authService.getSavedAddresses());
+  const [orders, setOrders] = useState([]);
+  const [addresses, setAddresses] = useState([]);
+  const [isLoadingAccountData, setIsLoadingAccountData] = useState(true);
 
   useEffect(() => {
     if (!currentUser) {
       navigate('/login', { replace: true, state: { from: { pathname: '/account' } } });
+      return undefined;
     }
+
+    let active = true;
+    Promise.all([orderService.listOrders(), addressService.listAddresses()])
+      .then(([backendOrders, backendAddresses]) => {
+        if (!active) return;
+        setOrders(backendOrders.map((order) => ({
+          rawId: order.id,
+          id: order.orderNumber || order.id,
+          date: order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : 'Recently placed',
+          status: order.status || 'PENDING',
+          paymentStatus: order.paymentStatus || 'PENDING',
+          itemsCount: order.items?.length || 0,
+          total: Number(order.total || 0),
+          items: (order.items || []).map((item) => ({
+            name: item.productName,
+            size: item.size || 'Standard',
+            price: Number(item.unitPrice || 0),
+            qty: item.quantity,
+          })),
+        })));
+        setAddresses(backendAddresses.map((address) => ({
+          id: address.id,
+          title: address.isDefault ? 'Default Address' : 'Saved Address',
+          isDefault: address.isDefault,
+          recipient: address.fullName,
+          phone: address.phone,
+          line1: address.addressLine1,
+          city: address.city,
+          state: address.state,
+          pincode: address.postalCode,
+        })));
+      })
+      .catch(() => {
+        if (active) {
+          setOrders([]);
+          setAddresses([]);
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoadingAccountData(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [currentUser, navigate]);
 
   if (!currentUser) return null;
@@ -32,7 +81,7 @@ export default function AccountPage({ onShowToast, onAddToCart, onToggleWishlist
     navigate('/');
   };
 
-  const wishlistedProducts = ALL_PRODUCTS.filter((p) => wishlistIds.includes(p.id));
+  const wishlistedProducts = products.filter((p) => wishlistIds.includes(p.id));
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: <User className="w-4 h-4" /> },
@@ -165,6 +214,10 @@ export default function AccountPage({ onShowToast, onAddToCart, onToggleWishlist
               </div>
             )}
 
+            {isLoadingAccountData && (
+              <p className="text-xs font-bold text-slate-500">Loading your account data...</p>
+            )}
+
             {/* TAB: ORDERS */}
             {activeTab === 'orders' && (
               <div className="space-y-6">
@@ -195,14 +248,16 @@ export default function AccountPage({ onShowToast, onAddToCart, onToggleWishlist
                             <span className="font-black text-slate-900">{ord.id}</span>
                             <span className="text-slate-400 ml-2">Placed on {ord.date}</span>
                           </div>
+                          <a href={orderService.invoiceUrl(ord.rawId)} className="text-[10px] font-black uppercase text-fuchsia-600 hover:underline">Download invoice</a>
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-xs border border-emerald-200">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> {ord.status}
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-xs border ${ord.status === 'DECLINED' || ord.paymentStatus === 'FAILED' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                              <CheckCircle2 className="w-3 h-3" /> {ord.status}
                             </span>
                             <span className="font-black text-slate-950 text-sm">
                               ₹{ord.total.toLocaleString('en-IN')}
                             </span>
                           </div>
+                          <p className="text-[10px] uppercase font-black text-slate-500">Payment: {ord.paymentStatus.replaceAll('_', ' ')}</p>
                         </div>
 
                         <div className="space-y-2">
@@ -252,6 +307,7 @@ export default function AccountPage({ onShowToast, onAddToCart, onToggleWishlist
                         product={p}
                         onProductClick={onProductClick}
                         onAddToCart={onAddToCart}
+                        onBuyNow={onBuyNow}
                         onToggleWishlist={onToggleWishlist}
                         isWishlisted={true}
                       />

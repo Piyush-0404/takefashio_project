@@ -1,35 +1,28 @@
 import React from 'react';
 import { Sparkles, Percent, Copy, Check } from 'lucide-react';
-import { ALL_PRODUCTS } from '../catalog';
 import ProductGrid from '../ProductGrid';
+import { apiClient } from '../services/apiClient';
+import { subscribeCatalogUpdates } from '../services/catalogSync';
 
-export default function OffersPage({ onProductClick, onAddToCart, onToggleWishlist, wishlistIds = [], onShowToast }) {
+export default function OffersPage({ onProductClick, onAddToCart, onBuyNow, onToggleWishlist, wishlistIds = [], onShowToast, products = [] }) {
   const [copiedCode, setCopiedCode] = React.useState(null);
+  const [offers, setOffers] = React.useState([]);
 
-  const discountedProducts = ALL_PRODUCTS.filter(
+  React.useEffect(() => {
+    let active = true;
+    const loadOffers = () => apiClient.get('/api/offers').then((payload) => {
+      if (active) setOffers(Array.isArray(payload?.offers) ? payload.offers : []);
+    }).catch(() => undefined);
+    loadOffers();
+    const unsubscribe = subscribeCatalogUpdates((event) => {
+      if (event.entity === 'offer') loadOffers();
+    });
+    return () => { active = false; unsubscribe(); };
+  }, []);
+
+  const discountedProducts = products.filter(
     (p) => p.originalPrice && p.originalPrice > p.price
   );
-
-  const coupons = [
-    {
-      code: 'TAKEFASHION20',
-      title: 'Flat 20% OFF Everything',
-      desc: 'Applicable on all orders above ₹999 across men, women, kids & jewellery.',
-      gradient: 'from-fuchsia-600 to-pink-600'
-    },
-    {
-      code: 'FIRSTLOOK15',
-      title: '15% OFF New Season Drops',
-      desc: 'Exclusive first-order discount code valid on our latest fashion additions.',
-      gradient: 'from-purple-600 to-indigo-600'
-    },
-    {
-      code: 'STYLE500',
-      title: 'Flat ₹500 Instant Savings',
-      desc: 'Save ₹500 immediately on luxury apparel & footwear orders over ₹2,499.',
-      gradient: 'from-orange-500 to-amber-600'
-    }
-  ];
 
   const handleCopy = (code) => {
     navigator.clipboard.writeText(code);
@@ -83,7 +76,9 @@ export default function OffersPage({ onProductClick, onAddToCart, onToggleWishli
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {coupons.map((c) => (
+            {offers.map((offer) => {
+              const c = { code: offer.slug, title: offer.name, desc: offer.description || 'Limited-time TakeFashion offer.', gradient: 'from-fuchsia-600 to-orange-500' };
+              return (
               <div
                 key={c.code}
                 className="bg-white border border-slate-200/90 rounded-xs p-6 flex flex-col justify-between tf-shadow-card hover:tf-shadow-card-hover transition relative overflow-hidden"
@@ -120,7 +115,9 @@ export default function OffersPage({ onProductClick, onAddToCart, onToggleWishli
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
+            {!offers.length && <p className="text-sm text-slate-500 md:col-span-3">No active offers right now.</p>}
           </div>
         </section>
 
@@ -142,6 +139,7 @@ export default function OffersPage({ onProductClick, onAddToCart, onToggleWishli
             products={discountedProducts}
             onProductClick={onProductClick}
             onAddToCart={onAddToCart}
+            onBuyNow={onBuyNow}
             onToggleWishlist={onToggleWishlist}
             wishlistIds={wishlistIds}
           />

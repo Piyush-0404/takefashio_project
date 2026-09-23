@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { getAdminOrResponse } from "@/lib/admin";
-import { errorResponse, ok } from "@/lib/http";
+import { badRequest, errorResponse, ok } from "@/lib/http";
 import { z } from "zod";
 
 const imageSchema = z.object({ imageUrl: z.string().url(), altText: z.string().optional(), isPrimary: z.boolean().optional(), sortOrder: z.number().int().nonnegative().optional() });
@@ -9,4 +9,4 @@ const productSchema = z.object({ name: z.string().min(2), slug: z.string().regex
 
 export async function GET() { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { return ok({ products: await db.product.findMany({ include: { category: true, productImages: { orderBy: { sortOrder: "asc" } }, variants: { include: { inventory: true } } }, orderBy: { updatedAt: "desc" } }) }); } catch (error) { return errorResponse(error); } }
 
-export async function POST(request: Request) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const input = productSchema.parse(await request.json()); const { images, variants, ...data } = input; const product = await db.product.create({ data: { ...data, basePrice: data.basePrice ?? data.price, images: images ?? undefined, productImages: images ? { create: images } : undefined, variants: variants ? { create: variants.map((variant) => ({ ...variant, inventory: { create: { quantity: variant.stockQuantity, availableQuantity: variant.stockQuantity } } })) } : undefined }, include: { productImages: true, variants: { include: { inventory: true } } } }); return ok({ product }, 201); } catch (error) { return errorResponse(error); } }
+export async function POST(request: Request) { const admin = await getAdminOrResponse(); if (admin instanceof Response) return admin; try { const input = productSchema.parse(await request.json()); const category = await db.category.findFirst({ where: { id: input.categoryId, isActive: true } }); if (!category) return badRequest("Selected category does not exist or is inactive", 400); const { images, variants, ...data } = input; const product = await db.product.create({ data: { ...data, basePrice: data.basePrice ?? data.price, images: images ?? undefined, productImages: images ? { create: images } : undefined, variants: variants ? { create: variants.map((variant) => ({ ...variant, inventory: { create: { quantity: variant.stockQuantity, availableQuantity: variant.stockQuantity } } })) } : undefined }, include: { productImages: true, variants: { include: { inventory: true } } } }); return ok({ product }, 201); } catch (error) { return errorResponse(error); } }

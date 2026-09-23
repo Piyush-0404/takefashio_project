@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { X, Star, Heart, ShoppingBag, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function ProductDetailModal({ product, onClose, onAddToCart, onToggleWishlist, isWishlisted }) {
+export default function ProductDetailModal({ product, onClose, onAddToCart, onBuyNow, onToggleWishlist, isWishlisted }) {
   const [activeImg, setActiveImg] = useState(product?.heroImage || '');
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || 'M');
   const [pincode, setPincode] = useState('');
   const [pincodeStatus, setPincodeStatus] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const selectedVariant = product?.variants?.find((variant) => variant.size === selectedSize) || product?.variants?.[0];
 
   if (!product) return null;
 
@@ -49,7 +50,7 @@ export default function ProductDetailModal({ product, onClose, onAddToCart, onTo
           <div className="md:col-span-6 space-y-4">
             <div className="relative aspect-[3/4] bg-slate-100 rounded-xs overflow-hidden border border-slate-200">
               <img
-                src={activeImg || product.heroImage}
+                src={activeImg || product.heroImage || '/takefashion-logo.png'}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -198,7 +199,7 @@ export default function ProductDetailModal({ product, onClose, onAddToCart, onTo
                 <button
                   onClick={() => {
                     for (let i = 0; i < quantity; i++) {
-                      onAddToCart(product);
+                      onAddToCart({ ...product, productVariantId: selectedVariant?.id });
                     }
                     onClose();
                   }}
@@ -206,6 +207,8 @@ export default function ProductDetailModal({ product, onClose, onAddToCart, onTo
                 >
                   <ShoppingBag className="w-4 h-4" /> Add To Bag
                 </button>
+
+                <button onClick={() => { onBuyNow({ ...product, productVariantId: selectedVariant?.id }, quantity); onClose(); }} className="w-full py-2.5 border border-orange-400 text-orange-700 hover:bg-orange-400 hover:text-slate-950 font-black text-xs uppercase tracking-widest rounded-xs">Buy Now</button>
 
                 <button
                   onClick={() => onToggleWishlist(product.id)}

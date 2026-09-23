@@ -6,6 +6,7 @@ export default function ProductCard({
   product,
   onProductClick,
   onAddToCart,
+  onBuyNow,
   onToggleWishlist,
   isWishlisted
 }) {
@@ -65,7 +66,7 @@ export default function ProductCard({
         className="relative aspect-[3/4] overflow-hidden bg-slate-100/70 cursor-pointer"
       >
         <img
-          src={displayImage}
+          src={displayImage || '/takefashion-logo.png'}
           alt={product.name}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
@@ -129,18 +130,10 @@ export default function ProductCard({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
-            className="w-full py-2 bg-slate-900 hover:bg-gradient-to-r hover:from-fuchsia-600 hover:to-orange-500 text-white font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all duration-200 rounded-xs shadow-xs active:scale-[0.99]"
-          >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            Add To Bag
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart(product); }} className="py-2 bg-slate-900 hover:bg-gradient-to-r hover:from-fuchsia-600 hover:to-orange-500 text-white font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 transition-all rounded-xs"><ShoppingBag className="w-3.5 h-3.5" />Add To Bag</button>
+            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBuyNow(product, 1); }} className="py-2 border border-orange-400 text-orange-700 hover:bg-orange-400 hover:text-slate-950 font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 transition-all rounded-xs">Buy Now</button>
+          </div>
         </div>
       </div>
     </div>
