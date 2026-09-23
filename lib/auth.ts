@@ -14,7 +14,8 @@ export async function createToken(user: { id: string; role: string }) {
 }
 
 export async function setAuthCookie(token: string) {
-  (await cookies()).set(cookieName, token, { httpOnly: true, sameSite: "lax", secure: process.env.COOKIE_SECURE === "true", path: "/", maxAge: 7 * 24 * 60 * 60 });
+  const secureCookie = process.env.NODE_ENV === "production" && process.env.COOKIE_SECURE?.trim().toLowerCase() === "true";
+  (await cookies()).set(cookieName, token, { httpOnly: true, sameSite: "lax", secure: secureCookie, path: "/", maxAge: 7 * 24 * 60 * 60 });
 }
 
 export async function clearAuthCookie() { (await cookies()).delete(cookieName); }

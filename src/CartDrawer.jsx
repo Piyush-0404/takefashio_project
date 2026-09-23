@@ -24,10 +24,10 @@ export default function CartDrawer({
   const shipping = subtotal >= shippingThreshold || subtotal === 0 ? 0 : 99;
   const grandTotal = Math.max(0, subtotal - discount + shipping);
 
-  const handleApplyPromo = (e) => {
+  const handleApplyPromo = async (e) => {
     e.preventDefault();
     setCouponError('');
-    const result = couponService.validateCoupon(promoCode, subtotal);
+    const result = await couponService.validateCoupon(promoCode, subtotal);
     if (result.valid) {
       setAppliedCoupon(result);
       setCouponError('');

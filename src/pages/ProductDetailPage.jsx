@@ -4,15 +4,16 @@ import { Star, Heart, ShoppingBag, Truck, RefreshCw, ShieldCheck, Check, Chevron
 import { ALL_PRODUCTS } from '../catalog';
 import ProductCard from '../components/product/ProductCard';
 
-export default function ProductDetailPage({ onAddToCart, onToggleWishlist, wishlistIds = [], onProductClick }) {
+export default function ProductDetailPage({ onAddToCart, onBuyNow, onToggleWishlist, wishlistIds = [], onProductClick, products = ALL_PRODUCTS }) {
   const { id } = useParams();
-  const product = ALL_PRODUCTS.find((p) => p.id === id) || ALL_PRODUCTS[0];
+  const product = products.find((p) => p.id === id) || products[0] || ALL_PRODUCTS[0];
 
   const [activeImage, setActiveImage] = useState(product.images?.[0] || product.heroImage);
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || 'M');
   const [quantity, setQuantity] = useState(1);
   const [pincode, setPincode] = useState('');
   const [deliveryStatus, setDeliveryStatus] = useState(null);
+  const selectedVariant = product.variants?.find((variant) => variant.size === selectedSize) || product.variants?.[0];
 
   const isWishlisted = wishlistIds.includes(product.id);
   const discountPercent = product.originalPrice && product.originalPrice > product.price
@@ -35,7 +36,7 @@ export default function ProductDetailPage({ onAddToCart, onToggleWishlist, wishl
   };
 
   // Related products from same audience/department
-  const relatedProducts = ALL_PRODUCTS.filter(
+  const relatedProducts = products.filter(
     (p) => p.id !== product.id && (p.department === product.department || p.audience === product.audience)
   ).slice(0, 4);
 
@@ -79,7 +80,7 @@ export default function ProductDetailPage({ onAddToCart, onToggleWishlist, wishl
             {/* Main Stage Image */}
             <div className="flex-1 relative aspect-[3/4] bg-slate-100 rounded-xs overflow-hidden border border-slate-200/90 tf-shadow-card">
               <img
-                src={activeImage}
+                src={activeImage || '/takefashion-logo.png'}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -185,7 +186,7 @@ export default function ProductDetailPage({ onAddToCart, onToggleWishlist, wishl
                   type="button"
                   onClick={() => {
                     for (let i = 0; i < quantity; i++) {
-                      onAddToCart(product);
+                      onAddToCart({ ...product, productVariantId: selectedVariant?.id });
                     }
                   }}
                   className="flex-1 h-11 tf-btn-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 rounded-xs shadow-md"
@@ -193,6 +194,8 @@ export default function ProductDetailPage({ onAddToCart, onToggleWishlist, wishl
                   <ShoppingBag className="w-4 h-4" />
                   Add To Bag
                 </button>
+
+                <button type="button" onClick={() => onBuyNow({ ...product, productVariantId: selectedVariant?.id }, quantity)} className="flex-1 h-11 border border-orange-400 text-orange-700 hover:bg-orange-400 hover:text-slate-950 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 rounded-xs">Buy Now</button>
 
                 <button
                   type="button"

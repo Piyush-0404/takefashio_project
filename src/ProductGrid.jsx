@@ -6,7 +6,8 @@ import { Link } from 'react-router-dom';
 export default function ProductGrid({ 
   products = [], 
   onProductClick, 
-  onAddToCart, 
+  onAddToCart,
+  onBuyNow,
   onToggleWishlist,
   wishlistIds = [],
   isLoading = false
@@ -56,6 +57,7 @@ export default function ProductGrid({
           product={product}
           onProductClick={onProductClick}
           onAddToCart={onAddToCart}
+          onBuyNow={onBuyNow}
           onToggleWishlist={onToggleWishlist}
           isWishlisted={wishlistIds.includes(product.id)}
         />

@@ -42,8 +42,8 @@ export default function SignupPage({ onShowToast }) {
       setError('Please enter a valid 10-digit mobile number.');
       return;
     }
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long.');
       return;
     }
     if (formData.password !== formData.confirmPassword) {
@@ -57,7 +57,7 @@ export default function SignupPage({ onShowToast }) {
 
     setIsLoading(true);
     try {
-      const user = await authService.signup({
+      const result = await authService.signup({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -68,10 +68,10 @@ export default function SignupPage({ onShowToast }) {
         onShowToast({
           type: 'success',
           title: 'Account Created',
-          message: `Welcome to TakeFashion, ${user.name}!`
+          message: 'Check your email for a verification code.'
         });
       }
-      navigate('/account', { replace: true });
+      navigate('/verify-email', { replace: true, state: { email: result.email || formData.email } });
     } catch (err) {
       setError(err.message || 'Unable to create account. Please check your details.');
     } finally {

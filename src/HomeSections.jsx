@@ -28,9 +28,21 @@ function SectionHeading({ eyebrow, title, action, onAction, actionHref }) {
   );
 }
 
-export default function HomeSections({ products, onProductClick, onAddToCart, onToggleWishlist, wishlistIds }) {
+export default function HomeSections({ products, categories = [], onProductClick, onAddToCart, onBuyNow, onToggleWishlist, wishlistIds }) {
   const jewellery = products.filter((product) => product.department === 'Jewellery').slice(0, 4);
   const newArrivals = products.filter((product) => product.isNew).slice(0, 4);
+  const categoryCards = categories.length
+    ? categories.map((category) => ({
+        title: category.name,
+        copy: category.description || 'Fresh arrivals curated for your wardrobe.',
+        image: category.imageUrl || 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&q=80&w=900',
+        href: `/${category.slug}`,
+      }))
+    : [
+        { title: 'Men', copy: 'Everyday essentials with a sharper point of view.', image: 'https://images.unsplash.com/photo-1516826957135-700dedea698c?auto=format&fit=crop&q=80&w=900', href: '/men' },
+        { title: 'Women', copy: 'Statement silhouettes made for your next entrance.', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=900', href: '/women' },
+        { title: 'Kids', copy: 'Playful layers for little personalities.', image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&q=80&w=900', href: '/kids' },
+      ];
 
   return (
     <div className="bg-[#fffafc] text-slate-950">
@@ -57,7 +69,7 @@ export default function HomeSections({ products, onProductClick, onAddToCart, on
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-16">
         <SectionHeading eyebrow="Start with a mood" title="Shop by Category" />
         <div className="grid md:grid-cols-3 gap-5">
-          {categories.map((category) => <Link key={category.title} to={`/${category.title.toLowerCase()}`} className="group text-left relative overflow-hidden min-h-[360px] bg-slate-200">
+          {categoryCards.map((category) => <Link key={category.title} to={category.href} className="group text-left relative overflow-hidden min-h-[360px] bg-slate-200">
             <img src={category.image} alt={category.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
             <div className="absolute bottom-0 p-6 text-white"><h3 className="text-3xl font-black">{category.title}</h3><p className="mt-1 text-sm text-white/75 max-w-[220px]">{category.copy}</p><span className="mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-orange-300">Shop now <ArrowRight className="w-4 h-4" /></span></div>
@@ -71,11 +83,11 @@ export default function HomeSections({ products, onProductClick, onAddToCart, on
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 md:px-8 py-16"><SectionHeading eyebrow="Seen everywhere" title="Trending Now" action="Shop all" actionHref="/men" /><ProductGrid products={products.slice(0, 4)} onProductClick={onProductClick} onAddToCart={onAddToCart} onToggleWishlist={onToggleWishlist} wishlistIds={wishlistIds} /></section>
+      <section className="max-w-7xl mx-auto px-4 md:px-8 py-16"><SectionHeading eyebrow="Seen everywhere" title="Trending Now" action="Shop all" actionHref="/men" /><ProductGrid products={products.slice(0, 4)} onProductClick={onProductClick} onAddToCart={onAddToCart} onBuyNow={onBuyNow} onToggleWishlist={onToggleWishlist} wishlistIds={wishlistIds} /></section>
 
-      <section className="bg-[#f7eef8]"><div className="max-w-7xl mx-auto px-4 md:px-8 py-16"><SectionHeading eyebrow="Just landed" title="New Arrivals" /><ProductGrid products={newArrivals.length ? newArrivals : products.slice(0, 4)} onProductClick={onProductClick} onAddToCart={onAddToCart} onToggleWishlist={onToggleWishlist} wishlistIds={wishlistIds} /></div></section>
+      <section className="bg-[#f7eef8]"><div className="max-w-7xl mx-auto px-4 md:px-8 py-16"><SectionHeading eyebrow="Just landed" title="New Arrivals" /><ProductGrid products={newArrivals.length ? newArrivals : products.slice(0, 4)} onProductClick={onProductClick} onAddToCart={onAddToCart} onBuyNow={onBuyNow} onToggleWishlist={onToggleWishlist} wishlistIds={wishlistIds} /></div></section>
 
-      <section className="max-w-7xl mx-auto px-4 md:px-8 py-16"><div className="grid lg:grid-cols-2 gap-6 items-stretch"><div className="bg-[#28153f] text-white p-8 md:p-12 flex flex-col justify-center"><p className="text-xs font-black tracking-[0.22em] uppercase text-orange-300">Jewellery edit</p><h2 className="mt-3 text-4xl md:text-5xl font-black">Complete Your Look</h2><p className="mt-4 text-white/70 max-w-sm">Layer colour, shine and a little attitude into every outfit.</p><Link to="/jewellery" className="mt-8 self-start px-5 py-3 bg-orange-400 text-slate-950 font-black uppercase text-xs tracking-wider">Shop Jewellery</Link></div><ProductGrid products={jewellery.slice(0, 2)} onProductClick={onProductClick} onAddToCart={onAddToCart} onToggleWishlist={onToggleWishlist} wishlistIds={wishlistIds} /></div></section>
+      <section className="max-w-7xl mx-auto px-4 md:px-8 py-16"><div className="grid lg:grid-cols-2 gap-6 items-stretch"><div className="bg-[#28153f] text-white p-8 md:p-12 flex flex-col justify-center"><p className="text-xs font-black tracking-[0.22em] uppercase text-orange-300">Jewellery edit</p><h2 className="mt-3 text-4xl md:text-5xl font-black">Complete Your Look</h2><p className="mt-4 text-white/70 max-w-sm">Layer colour, shine and a little attitude into every outfit.</p><Link to="/jewellery" className="mt-8 self-start px-5 py-3 bg-orange-400 text-slate-950 font-black uppercase text-xs tracking-wider">Shop Jewellery</Link></div><ProductGrid products={jewellery.slice(0, 2)} onProductClick={onProductClick} onAddToCart={onAddToCart} onBuyNow={onBuyNow} onToggleWishlist={onToggleWishlist} wishlistIds={wishlistIds} /></div></section>
 
       <section className="bg-white border-y border-slate-200"><div className="max-w-7xl mx-auto px-4 md:px-8 py-16"><SectionHeading eyebrow="The finishing touch" title="Step Out in Style" /><div className="grid md:grid-cols-2 gap-5"><Link to="/accessories/shoes" className="relative min-h-[260px] overflow-hidden text-left"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=85&w=1000" alt="Shoes edit" className="absolute inset-0 w-full h-full object-cover" /><div className="absolute inset-0 bg-slate-950/40" /><span className="absolute bottom-6 left-6 text-white text-3xl font-black">Shoes</span></Link><Link to="/accessories/bags" className="relative min-h-[260px] overflow-hidden text-left"><img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=85&w=1000" alt="Bags edit" className="absolute inset-0 w-full h-full object-cover" /><div className="absolute inset-0 bg-slate-950/40" /><span className="absolute bottom-6 left-6 text-white text-3xl font-black">Bags</span></Link></div></div></section>
 

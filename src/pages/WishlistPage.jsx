@@ -8,9 +8,11 @@ export default function WishlistPage({
   wishlistIds = [],
   onProductClick,
   onAddToCart,
-  onToggleWishlist
+  onBuyNow,
+  onToggleWishlist,
+  products = ALL_PRODUCTS
 }) {
-  const wishlistedProducts = ALL_PRODUCTS.filter((p) => wishlistIds.includes(p.id));
+  const wishlistedProducts = products.filter((p) => wishlistIds.includes(p.id));
 
   return (
     <div className="min-h-screen bg-[#fffafc] py-10">
@@ -69,6 +71,7 @@ export default function WishlistPage({
                 product={product}
                 onProductClick={onProductClick}
                 onAddToCart={onAddToCart}
+                onBuyNow={onBuyNow}
                 onToggleWishlist={onToggleWishlist}
                 isWishlisted={true}
               />

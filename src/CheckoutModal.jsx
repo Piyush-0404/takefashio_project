@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, ShieldCheck, CreditCard, Smartphone, Banknote, Sparkles, Truck, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { orderService } from './services/orderService';
 
-export default function CheckoutModal({ isOpen, onClose, totals = {}, onClearCart }) {
+function loadRazorpay() {
+  if (window.Razorpay) return Promise.resolve(true);
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error('Unable to load Razorpay Checkout.'));
+    document.body.appendChild(script);
+  });
+}
+
+export default function CheckoutModal({ isOpen, onClose, totals = {}, cart = [], directPurchase = null, onClearCart }) {
   const [step, setStep] = useState('form'); // 'form' or 'success'
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [formData, setFormData] = useState({
@@ -15,6 +27,11 @@ export default function CheckoutModal({ isOpen, onClose, totals = {}, onClearCar
     pincode: ''
   });
   const [orderId, setOrderId] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const checkoutItems = directPurchase
+    ? [{ ...directPurchase.product, quantity: directPurchase.quantity }]
+    : cart;
 
   if (!isOpen) return null;
 
@@ -22,12 +39,60 @@ export default function CheckoutModal({ isOpen, onClose, totals = {}, onClearCar
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    const generatedId = 'TF-ORD-' + Math.floor(100000 + Math.random() * 900000);
-    setOrderId(generatedId);
-    setStep('success');
-    onClearCart();
+    setError('');
+    setIsSubmitting(true);
+    let awaitingPayment = false;
+    try {
+      const address = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        line1: formData.address,
+        city: formData.city,
+        state: formData.state,
+        postalCode: formData.pincode,
+        country: 'India',
+      };
+      const items = directPurchase ? [{ productId: directPurchase.product.id, productVariantId: directPurchase.productVariantId, quantity: directPurchase.quantity }] : null;
+      const payload = paymentMethod === 'COD'
+        ? await orderService.createCashOrder(address, items, totals.appliedCoupon || null)
+        : await orderService.createOrder(address, items, totals.appliedCoupon || null);
+      if (paymentMethod === 'COD') {
+        setOrderId(payload?.order?.orderNumber || payload?.order?.id || 'Order received');
+        setStep('success');
+        onClearCart();
+      } else {
+        awaitingPayment = true;
+        const paymentOrder = await orderService.createPaymentOrder(payload.order.id);
+        await loadRazorpay();
+        const razorpay = new window.Razorpay({
+          key: paymentOrder.paymentOrder.keyId,
+          amount: paymentOrder.paymentOrder.amount,
+          currency: paymentOrder.paymentOrder.currency,
+          name: 'TakeFashion',
+          description: `Order ${payload.order.orderNumber}`,
+          order_id: paymentOrder.paymentOrder.id,
+          prefill: { name: formData.name, email: formData.email, contact: formData.phone },
+          handler: async (response) => {
+            try {
+              const verified = await orderService.verifyPayment(response);
+              setOrderId(verified?.order?.orderNumber || payload.order.orderNumber);
+              setStep('success');
+              onClearCart();
+            } catch (verificationError) { setError(verificationError.message || 'Payment verification failed. Do not retry without checking your order status.'); }
+            finally { setIsSubmitting(false); }
+          },
+          modal: { ondismiss: () => { setError('Payment was cancelled. Your order remains pending and no payment was confirmed.'); setIsSubmitting(false); } },
+        });
+        razorpay.on('payment.failed', (response) => { setError(response?.error?.description || 'Payment failed. Your order remains unpaid.'); setIsSubmitting(false); });
+        razorpay.open();
+        return;
+      }
+    } catch (submitError) {
+      setError(submitError.message || 'Unable to place the order. Please try again.');
+    } finally { if (!awaitingPayment) setIsSubmitting(false); }
   };
 
   return (
@@ -64,8 +129,18 @@ export default function CheckoutModal({ isOpen, onClose, totals = {}, onClearCar
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xs text-xs text-amber-800 font-medium mb-6 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
               <span>
-                <strong>Frontend Prototype:</strong> This is a simulation flow. No real charges or payment requests will be made.
+                <strong>Secure checkout:</strong> Your order is created through the TakeFashion backend. Payment capture is handled separately.
               </span>
+            </div>
+
+            <div className="border border-slate-200 p-4 mb-6 space-y-2">
+              <h3 className="text-xs font-black uppercase tracking-wider">Items in this checkout</h3>
+              {checkoutItems.length ? checkoutItems.map((item) => (
+                <div key={item.id} className="flex items-center justify-between text-xs">
+                  <span className="font-bold">{item.name} × {item.quantity}</span>
+                  <span>₹{(Number(item.price) * item.quantity).toLocaleString('en-IN')}</span>
+                </div>
+              )) : <p className="text-rose-600 font-bold">Cart is empty. Return to shopping and add an item.</p>}
             </div>
 
             <form onSubmit={handlePlaceOrder} className="space-y-6">
@@ -217,12 +292,14 @@ export default function CheckoutModal({ isOpen, onClose, totals = {}, onClearCar
 
                 <button
                   type="submit"
+                  disabled={isSubmitting || !checkoutItems.length}
                   className="w-full sm:w-auto px-8 py-3.5 tf-btn-primary font-black text-xs uppercase tracking-widest rounded-xs shadow-md flex items-center justify-center gap-2"
                 >
-                  Confirm & Place Order
+                  {isSubmitting ? 'Placing Order...' : 'Confirm & Place Order'}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
+              {error && <p className="text-xs font-bold text-rose-600" role="alert">{error}</p>}
             </form>
           </div>
         ) : (
@@ -234,7 +311,7 @@ export default function CheckoutModal({ isOpen, onClose, totals = {}, onClearCar
 
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-xs border border-emerald-200 inline-block mb-2">
-                Order Received (Prototype Demo)
+                Order Received
               </span>
               <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-slate-950">
                 Thank You for Ordering!
@@ -249,7 +326,7 @@ export default function CheckoutModal({ isOpen, onClose, totals = {}, onClearCar
                 <strong className="text-slate-900">Delivering to:</strong> {formData.name || 'Aanya Verma'}, {formData.address || 'Signature Palms'}, {formData.city || 'Gurugram'} - {formData.pincode || '122002'}
               </p>
               <p className="text-slate-600">
-                <strong className="text-slate-900">Payment:</strong> {paymentMethod} (Prototype Mode)
+                <strong className="text-slate-900">Payment:</strong> {paymentMethod}
               </p>
               <p className="text-slate-600">
                 <strong className="text-slate-900">Estimated Dispatch:</strong> Within 24 hours
