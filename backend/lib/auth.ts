@@ -14,11 +14,24 @@ export async function createToken(user: { id: string; role: string }) {
 }
 
 export async function setAuthCookie(token: string) {
-  const secureCookie = process.env.NODE_ENV === "production" && process.env.COOKIE_SECURE?.trim().toLowerCase() === "true";
-  (await cookies()).set(cookieName, token, { httpOnly: true, sameSite: "lax", secure: secureCookie, path: "/", maxAge: 7 * 24 * 60 * 60 });
+  (await cookies()).set(cookieName, token, {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60,
+  });
 }
 
-export async function clearAuthCookie() { (await cookies()).delete(cookieName); }
+export async function clearAuthCookie() {
+  (await cookies()).set(cookieName, "", {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+    path: "/",
+    maxAge: 0,
+  });
+}
 
 export async function currentUser() {
   const token = (await cookies()).get(cookieName)?.value;
