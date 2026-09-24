@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import ProductCard from './components/product/ProductCard';
 import { ShoppingBag, Sparkles } from 'lucide-react';
