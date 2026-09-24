@@ -255,8 +255,6 @@ export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSea
             Home
           </NavLink>
 
-          {currentUser && <div className="relative"><button onClick={() => setNotificationsOpen((open) => !open)} className="p-2 text-slate-700 hover:text-fuchsia-600 transition relative rounded-full hover:bg-slate-100/60" title="Notifications" aria-label="Notifications"><Bell className="w-5 h-5" />{unreadNotifications > 0 && <span className="absolute top-1 right-1 bg-fuchsia-600 text-white font-black text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center">{unreadNotifications}</span>}</button>{notificationsOpen && <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 shadow-xl p-3 z-50"><div className="flex items-center justify-between border-b pb-2"><strong className="text-xs uppercase">Notifications</strong><button onClick={onMarkAllNotificationsRead} className="text-[10px] font-bold text-fuchsia-600">Mark all read</button></div><div className="max-h-80 overflow-y-auto">{notifications.length ? notifications.map((notification) => <button key={notification.id} onClick={() => { onMarkNotificationRead?.(notification.id); if (notification.link) navigate(notification.link); }} className={`block w-full text-left py-3 border-b border-slate-100 ${notification.readAt ? 'opacity-60' : ''}`}><p className="text-xs font-black">{notification.title}</p><p className="text-[11px] text-slate-600 mt-1">{notification.message}</p><p className="text-[10px] text-slate-400 mt-1">{new Date(notification.createdAt).toLocaleString('en-IN')}</p></button>) : <p className="py-6 text-xs text-slate-500 text-center">No notifications.</p>}</div></div>}</div>}
-
           {categoryMenus.map(([label, menu]) => (
             <div
               key={label}
@@ -346,7 +344,7 @@ export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSea
           </NavLink>
         </nav>
 
-        {/* Right: Actions (Search, Wishlist, Cart, Account) */}
+        {/* Right: Actions (Search, Notifications, Wishlist, Cart, Account) */}
         <div className="flex items-center gap-1 md:gap-2">
           {/* Search Trigger */}
           <button
@@ -357,6 +355,9 @@ export default function Header({ cartCount, wishlistCount, onOpenCart, onOpenSea
           >
             <Search className="w-5 h-5" />
           </button>
+
+          {/* Notifications Trigger */}
+          {currentUser && <div className="relative"><button onClick={() => setNotificationsOpen((open) => !open)} className="p-2 text-slate-700 hover:text-fuchsia-600 transition relative rounded-full hover:bg-slate-100/60" title="Notifications" aria-label="Notifications"><Bell className="w-5 h-5" />{unreadNotifications > 0 && <span className="absolute top-1 right-1 bg-fuchsia-600 text-white font-black text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center">{unreadNotifications}</span>}</button>{notificationsOpen && <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 shadow-xl p-3 z-50"><div className="flex items-center justify-between border-b pb-2"><strong className="text-xs uppercase">Notifications</strong><button onClick={onMarkAllNotificationsRead} className="text-[10px] font-bold text-fuchsia-600">Mark all read</button></div><div className="max-h-80 overflow-y-auto">{notifications.length ? notifications.map((notification) => <button key={notification.id} onClick={() => { onMarkNotificationRead?.(notification.id); if (notification.link) navigate(notification.link); }} className={`block w-full text-left py-3 border-b border-slate-100 ${notification.readAt ? 'opacity-60' : ''}`}><p className="text-xs font-black">{notification.title}</p><p className="text-[11px] text-slate-600 mt-1">{notification.message}</p><p className="text-[10px] text-slate-400 mt-1">{new Date(notification.createdAt).toLocaleString('en-IN')}</p></button>) : <p className="py-6 text-xs text-slate-500 text-center">No notifications.</p>}</div></div>}</div>}
 
           {/* Wishlist Link */}
           <NavLink
